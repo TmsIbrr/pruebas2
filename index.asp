@@ -1,3 +1,4 @@
+<!-- #include file="conexion.asp"-->
 <html>
     <head>
         <title>Sitio de Prueba</title>
@@ -15,6 +16,8 @@
     </head>
     <form name="limpiavariables" action="index.asp" method="post">
     </form>
+    <form name="irapostulaciones" action="postulaciones.asp" method="post">
+    </form>
     <%
 
       
@@ -27,25 +30,46 @@
         Fnacimiento = trim(Request("Fnacimiento"))
         Telefono = trim(Request("Telefono"))
         Movil = trim(Request("Movil"))
+        Correo=trim(Request("Correo"))
         Carreras = trim(Request("Carreras"))
         Observaciones = trim(Request("Observaciones"))
         Medio1 = trim(Request("Medio1"))
-        Medio2 = trim(Request("Medio2"))%>
-    
+        Medio2 = trim(Request("Medio2"))
         
-        <script>
-            alert("Registros guardados.")
-        </script>
-    <%end if
+           Rut = replace(Rut,".","")
+           Rut = replace(Rut,"-","")
 
+            if len(Rut)=9 then
+                Rut = "0"&Rut      
+            end if
 
+            if len(Rut)=8 then
+                Rut = "00"&Rut      
+            end if
+        
+        'VALIDA POSTULACIÓN
 
+        Set ValidaPostulacion=Conn.execute("SELECT * FROM Postulaciones where Rut='"&Rut&"'")
+        
+            if not ValidaPostulacion.eof then%>
+                <script>alert("Ud ya está postulando")</script>
+            <%Else
+
+             'INSERTO EL REGISTRO EN LA TABLA Postulaciones
+
+             Set InsertaRegistro=Conn.execute("INSERT INTO Postulaciones (Rut,Nombres,ApPaterno,ApMaterno,FechaNacimiento,Correo,Telefono,Movil,Carrera,Comentarios,Medio1,Medio2) VALUES ('"&Rut&"','"&Nombres&"','"&ApPaterno&"','"&ApMaterno&"','"&Fnacimiento&"','"&Correo&"','"&Telefono&"','"&Movil&"','"&Carreras&"','"&Observaciones&"','"&Medio1&"','"&Medio2&"') ")%>
+                <script>alert("Postulación realizada")</script>
+            <%end if
+    end if
+    
+    if Session("RUT")<>False then
     %>
     <body bgcolor="green" topmargin="0">
         <form name="form" action="index.asp" method="post">
         <table align="center" cellspacing="5" style="width: 80%; height: 100%;">
             <tr>
-                <td colspan="4">Bienvenido: <%=Session("RUT")%></td>
+                <td colspan="2">Bienvenido: <%=Session("NOMBRE")%></td>
+                <td colspan="2" align="right"><input type="button" value="Ver Postulaciones" name="Lista Postulaciones" onclick="irapostulaciones.submit()"></td>
             </tr>
             <tr>
                 <td colspan="4" align="center"><strong>Formulario de Ingreso Alumnos</strong></td>
@@ -81,9 +105,12 @@
             <tr>
                 <td>Carrera:</td>
                 <td colspan="3"><select name="Carreras" style="width: 100%;">
-                    <option value="1" <%if trim(Request("Carreras"))="1" then%>selected<%end if%>>Ingeniería en Informática</option>
-                    <option value="2" <%if trim(Request("Carreras"))="2" then%>selected<%end if%>>Analista Programador</option>
-                    <option value="3" <%if trim(Request("Carreras"))="3" then%>selected<%end if%>>Ingeniería en Administraci&oacute;n</option>
+                    <%Set Carreras=Conn.execute("SELECT * FROM Carreras order by NombreCarrera")
+
+                    while not Carreras.eof%>    
+                    <option value="<%=Carreras("Id")%>"><%=Carreras("NombreCarrera")%></option>
+                    <%Carreras.movenext
+                    wend%>
                 </select></td>
             </tr>
             <tr>
@@ -110,3 +137,9 @@
     </form>
     </body>
 </html>
+<%
+else%>
+<script>alert("Debe ingresar nuevamente al sistema")</script>
+<%
+response.Redirect("login.asp")
+end if%>

@@ -1,3 +1,4 @@
+<!-- #include file="conexion.asp"-->
 <html>
     <head>
         <title>Login</title>
@@ -29,15 +30,15 @@
                 Rut = "00"&Rut      
             end if
 
-            RutVerdadero="0123456789"
-            ClaveVerdadera="duoc24"
+            'Consulta a la BBDD Tabla Usuarios
 
+            Set ConsultaBBD=Conn.execute("SELECT * FROM Usuarios where Rut='"&Rut&"' and Clave='"&Clave&"'")        
 
-
-                    if (Clave = ClaveVerdadera) and (Rut = RutVerdadero) then
+                    if not ConsultaBBD.eof then
 
                         Session("RUT")=Rut
-                        
+                        Session("NOMBRE")=trim(ConsultaBBD("Nombre"))
+
                         response.redirect("index.asp")
 
                     else%>
